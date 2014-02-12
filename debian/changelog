@@ -1,7 +1,43 @@
+lzma (9.22-2) unstable; urgency=low
+
+  * Upload to unstable.
+  * Previous upload removed lzma-source. (Closes: #651796)
+  * Prevent /dev/null removal while testing a file. (Closes: #550543)
+
+ -- Mohammed Adnène Trojette <adn+deb@diwi.org>  Sun, 08 Jan 2012 15:15:18 +0100
+
+lzma (9.22-1) experimental; urgency=low
+
+  [ Mohammed Adnène Trojette ]
+  * New upstream release (Closes: #460501, #518365)
+     + LZMA SDK is placed in the public domain since 4.62.
+  * Update debian/patches/02_lzmp.diff.
+  * Switch packaging under the terms of the BSD license.
+  * Switch to dpkg-source 3.0 (quilt) format
+     + debian/control: Build-Depends
+        - drop quilt.
+        - bump debhelper dependency to 8.0.0.
+  * Bump Standards-Version to 3.9.2
+  * Drop lzma-source package. It doesn't work with current kernels and
+    SquashFS XZ is part of the standard kernel now. Patch courtesy of
+    Jonathan Nieder. (Closes: #470893, #553707, #466582)
+  * Update file list in lzma-dev. (Closes: #614417)
+  * Fix and improve descriptions. (Closes: #535776, #540469)
+  * Add deb-lzma script to convert a deb package to LZMA format. Script
+    courtesy of Roger Millan. (Closes: #536275)
+  * Add Jonathan Nieder as comaintainer.
+
+  [ Jonathan Nieder ]
+  * Bump debhelper compatibility to 7.
+  * Manage lzma, unlzma, and lzcat through the alternatives system.
+    Conflicts: xz-lzma (<< 5.1.1alpha+20110809-2). (Closes: #547802)
+
+ -- Mohammed Adnène Trojette <adn+deb@diwi.org>  Sat, 03 Sep 2011 23:27:39 +0200
+
 lzma (4.43-14) unstable; urgency=low
 
   * Bump Standards-Version to 3.8.0.
-  * Drop lzma-alon from Recommends.
+  * Drop lzma-alone from Recommends.
   * Don't build lzma-source when binary-indep target is not
     called. (Closes: #486419)
 

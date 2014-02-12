@@ -1,38 +1,45 @@
-Compression method IDs (4.38)
------------------------------
+7-Zip method IDs (9.18)
+-----------------------
 
-Each compression method in 7z has unique binary value (ID).
-The length of ID in bytes is arbitrary but it can not exceed 15 bytes.
+Each compression or crypto method in 7z has unique binary value (ID).
+The length of ID in bytes is arbitrary but it can not exceed 63 bits (8 bytes).
 
 If you want to add some new ID, you have two ways:
 1) Write request for allocating IDs to 7-zip developers.
-2) Use such random ID:
-  03 E0  ZZ ... ZZ  MM ... MM  VV ... VV
+2) Generate 8-bytes ID:
 
-    ZZ != 0, MM != 0, VV != 0
+    3F ZZ ZZ ZZ ZZ ZZ MM MM 
 
-    03 E0      - Prefix for random IDs 
-    ZZ ... ZZ  - Developer ID. (length >= 4). Use real random bytes.
-                 You can notify 7-Zip developers about your Developer ID.
-    MM ... MM  - Method ID (length >= 1)
-    VV ... VV  - Version  (length >= 1)
+    3F              - Prefix for random IDs (1 byte)
+    ZZ ZZ ZZ ZZ ZZ  - Developer ID (5 bytes). Use real random bytes. 
+                      
+    MM MM           - Method ID (2 bytes)
 
-    Note: Use new ID (MM ... MM  VV .. VV) only if old codec can not decode 
-    data encoded with new version.
+    You can notify 7-Zip developers about your Developer ID / Method ID.
+
+    Note: Use new ID only if old codec can not decode data encoded with new version.
 
 
 List of defined IDs
 -------------------
       
 00 - Copy
-01 - Reserved
-02 - Common
+
+03 - Delta
+04 - x86 (BCJ)
+05 - PPC (Big Endian)
+06 - IA64
+07 - ARM (little endian)
+08 - ARM Thumb (little endian)
+09 - SPARC
+21 - LZMA2
+          
+02.. - Common
    03 Swap
       - 2 Swap2
       - 4 Swap4
-   04 Delta (subject to change)
 
-03 - 7z
+03.. - 7z
    01 - LZMA
       01 - Version
   
@@ -41,28 +48,28 @@ List of defined IDs
          03  - BCJ
          1B  - BCJ2
       02 - PPC
-         05 - BC_PPC_B (Big Endian)
+         05 - PPC (Big Endian)
       03 - Alpha
-         01 - BC_Alpha
+         01 - Alpha
       04 - IA64
-         01 - BC_IA64
+         01 - IA64
       05 - ARM
-         01 - BC_ARM
+         01 - ARM
       06 - M68
-         05 - BC_M68_B (Big Endian)
+         05 - M68 (Big Endian)
       07 - ARM Thumb
-         01 - BC_ARMThumb
+         01 - ARMT
       08 - SPARC
-         05 - BC_SPARC
+         05 - SPARC
 
    04 - PPMD
       01 - Version
 
-   80 - reserved for independent developers
+   7F -
+      01 - experimental methods.
 
-   E0 - Random IDs
 
-04 - Misc
+04.. - Misc
    00 - Reserved
    01 - Zip
       00 - Copy (not used). Use {00} instead
@@ -70,7 +77,13 @@ List of defined IDs
       06 - Implode
       08 - Deflate
       09 - Deflate64
+      10 - Imploding
       12 - BZip2 (not used). Use {04 02 02} instead
+      14 - LZMA
+      60 - Jpeg
+      61 - WavPack
+      62 - PPMd
+      63 - wzAES
    02 - BZip
       02 - BZip2
    03 - Rar
@@ -89,12 +102,13 @@ List of defined IDs
       02 - BZip2NSIS
 
 
-06 - Crypto 
+06.. - Crypto 
    00 - 
    01 - AES
       0x - AES-128
       4x - AES-192
       8x - AES-256
+      Cx - AES
 
       x0 - ECB
       x1 - CBC
@@ -115,7 +129,7 @@ List of defined IDs
       07 - 7z
          01 - AES-256 + SHA-256
 
-07 - Hash (subject to change)
+07.. - Hash (subject to change)
    00 - 
    01 - CRC
    02 - SHA-1

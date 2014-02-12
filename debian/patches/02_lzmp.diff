@@ -1,7 +1,7 @@
-Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
+Index: lzma-9.22/CPP/7zip/Bundles/LzmaCon/lzmp.cpp
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp	2007-07-24 00:33:21.000000000 +0200
++++ lzma-9.22/CPP/7zip/Bundles/LzmaCon/lzmp.cpp	2012-01-08 16:24:26.000000000 +0100
 @@ -0,0 +1,896 @@
 +/*
 + * LZMA command line tool similar to gzip to encode and decode LZMA files.
@@ -24,8 +24,8 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 + * USA.
 + */
 +
-+#include "../../../Common/MyInitGuid.h"
 +#include "../../../Common/MyWindows.h"
++#include "../../../Common/MyInitGuid.h"
 +
 +#include <iostream>
 +using std::cout;
@@ -68,8 +68,8 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +
 +#include "../../../Common/Types.h"
 +
-+#include "../../../7zip/Compress/LZMA/LZMADecoder.h"
-+#include "../../../7zip/Compress/LZMA/LZMAEncoder.h"
++#include "../../../7zip/Compress/LzmaDecoder.h"
++#include "../../../7zip/Compress/LzmaEncoder.h"
 +
 +#include "Exception.h"
 +
@@ -95,7 +95,7 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +	short compression_mode;			// -a
 +	short dictionary;			// -d
 +	short fast_bytes;			// -fb
-+	wchar_t *match_finder;			// -mf
++	const wchar_t *match_finder;		// -mf
 +	short literal_context_bits;		// -lc
 +	short literal_pos_bits;			// -lp
 +	short pos_bits;				// -pb
@@ -118,8 +118,8 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +};
 +
 +struct extension_pair {
-+	char *from;
-+	char *to;
++	const char *from;
++	const char *to;
 +};
 +
 +const extension_pair known_extensions[] = {
@@ -367,7 +367,7 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +	}
 +} // parse_options
 +
-+void set_encoder_properties(NCompress::NLZMA::CEncoder *encoder,
++void set_encoder_properties(NCompress::NLzma::CEncoder *encoder,
 +		lzma_option &opt)
 +{
 +	/* Almost verbatim from LzmaAlone.cpp. */
@@ -405,7 +405,7 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +		throw Exception("SetCoderProperties() error");
 +}
 +
-+void encode(NCompress::NLZMA::CEncoder *encoderSpec,
++void encode(NCompress::NLzma::CEncoder *encoderSpec,
 +		CMyComPtr<ISequentialInStream> inStream,
 +		CMyComPtr<ISequentialOutStream> outStream,
 +		lzma_option encoder_options,
@@ -433,7 +433,7 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +	}
 +}
 +
-+void decode(NCompress::NLZMA::CDecoder *decoderSpec,
++void decode(NCompress::NLzma::CDecoder *decoderSpec,
 +		CMyComPtr<ISequentialInStream> inStream,
 +		CMyComPtr<ISequentialOutStream> outStream)
 +{
@@ -668,7 +668,7 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +
 +	bool warning = false;
 +
-+	for (int i = 0; i < filenames.size(); i++) {
++	for (unsigned int i = 0; i < filenames.size(); i++) {
 +		CMyComPtr<ISequentialInStream> inStream;
 +		CMyComPtr<ISequentialOutStream> outStream;
 +		UInt64 fileSize = 0;
@@ -804,8 +804,8 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +		}
 +
 +		if (program_mode == PM_COMPRESS) {
-+			    NCompress::NLZMA::CEncoder *encoderSpec =
-+				      new NCompress::NLZMA::CEncoder;
++			    NCompress::NLzma::CEncoder *encoderSpec =
++				      new NCompress::NLzma::CEncoder;
 +
 +			lzma_option options = option_mapping[compression_mode];
 +
@@ -823,15 +823,15 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +			delete(encoderSpec);
 +		}
 +		else {			// PM_DECOMPRESS | PM_TEST
-+		    NCompress::NLZMA::CDecoder *decoderSpec =
-+		        new NCompress::NLZMA::CDecoder;
++		    NCompress::NLzma::CDecoder *decoderSpec =
++		        new NCompress::NLzma::CDecoder;
 +
 +			try {
 +				decode(decoderSpec, inStream, outStream);
 +			}
 +			catch (Exception e) {
 +				cerr << argv[0] << ": " << e.what() << endl;
-+				unlink(output_filename.c_str());
++				if (program_mode != PM_TEST) unlink(output_filename.c_str());
 +				delete(decoderSpec);
 +
 +				return STATUS_ERROR;
@@ -899,10 +899,10 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzmp.cpp
 +	return STATUS_OK;
 +}
 +
-Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/Exception.h
+Index: lzma-9.22/CPP/7zip/Bundles/LzmaCon/Exception.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ lzma-4.43/C/7zip/Compress/LZMA_Alone/Exception.h	2007-07-24 00:31:50.000000000 +0200
++++ lzma-9.22/CPP/7zip/Bundles/LzmaCon/Exception.h	2012-01-08 16:23:18.000000000 +0100
 @@ -0,0 +1,45 @@
 +/* A couple of exceptions for lzmp.
 + *
@@ -949,55 +949,57 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/Exception.h
 +
 +#endif
 +
-Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/makefile.gcc
+Index: lzma-9.22/CPP/7zip/Bundles/LzmaCon/makefile.gcc
 ===================================================================
---- lzma-4.43.orig/C/7zip/Compress/LZMA_Alone/makefile.gcc	2007-07-24 00:31:50.000000000 +0200
-+++ lzma-4.43/C/7zip/Compress/LZMA_Alone/makefile.gcc	2007-07-24 00:31:50.000000000 +0200
+--- lzma-9.22.orig/CPP/7zip/Bundles/LzmaCon/makefile.gcc	2012-01-08 16:23:14.000000000 +0100
++++ lzma-9.22/CPP/7zip/Bundles/LzmaCon/makefile.gcc	2012-01-08 16:23:18.000000000 +0100
 @@ -1,9 +1,10 @@
 -PROG = lzma
 +PROG = lzma_alone
-+PROG2 = lzma
++PROG2 = lzmp
  CXX = g++ -O2 -Wall
  CXX_C = gcc -O2 -Wall
  LIB = -lm
  RM = rm -f
--CFLAGS = -c -I ../../../ -D_FILE_OFFSET_BITS=64
-+CFLAGS = -c -I ../../../ -D_FILE_OFFSET_BITS=64 -DPACKAGE_VERSION="\"4.32.0beta3\""
+-CFLAGS = -c -D_7ZIP_ST
++CFLAGS = -c -D_7ZIP_ST -DPACKAGE_VERSION="\"9.22\""
  
- OBJS = \
-   LzmaAlone.o \
-@@ -28,14 +29,36 @@
-   String.o \
-   StringConvert.o \
-   StringToInt.o \
--  Vector.o \
-+  Vector.o
+ ifdef SystemDrive
+ IS_MINGW = 1
+@@ -51,14 +52,38 @@
+   LzmaDec.o \
+   LzmaEnc.o \
+   Lzma86Dec.o \
+-  Lzma86Enc.o \
++  Lzma86Enc.o 
  
 +OBJS2 = \
-+  C_FileIO.o \
-+  CRC.o \
++  7zCrc.o \
++  7zCrcOpt.o \
 +  Alloc.o \
++  CpuArch.o \
++  CRC.o \
++  CWrappers.o \
++  $(FILE_IO).o \
 +  FileStreams.o \
++  LzFind.o \
++  LzmaDec.o \
++  LzmaDecoder.o \
++  LzmaEnc.o \
++  LzmaEncoder.o \
 +  StreamUtils.o \
-+  InBuffer.o \
-+  OutBuffer.o \
-+  LZMADecoder.o \
-+  RangeCoderBit.o \
-+  LZInWindow.o \
-+  LZOutWindow.o \
 +  StringConvert.o \
 +  StringToInt.o \
-+  LZMAEncoder.o \
 +  lzmp.o
  
 -all: $(PROG)
 +all: $(PROG) $(PROG2)
  
  $(PROG): $(OBJS)
- 	$(CXX) -o $(PROG) $(LDFLAGS) $(OBJS) $(LIB)
+ 	$(CXX) -o $(PROG) $(LDFLAGS) $(OBJS) $(LIB) $(LIB2)
  
 +$(PROG2): $(OBJS2)
-+	$(CXX) -o $(PROG2) $(LDFLAGS) $(OBJS2) $(LIB)
++	$(CXX) -o $(PROG2) $(LDFLAGS) $(OBJS2) $(LIB) $(LIB2)
 +
 +lzmp.o: lzmp.cpp
 +	$(CXX) $(CFLAGS) lzmp.cpp
@@ -1005,17 +1007,17 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/makefile.gcc
  LzmaAlone.o: LzmaAlone.cpp
  	$(CXX) $(CFLAGS) LzmaAlone.cpp
  
-@@ -109,5 +132,5 @@
- 	$(CXX) $(CFLAGS) ../../../Common/Vector.cpp
+@@ -160,5 +185,5 @@
+ 	$(CXX_C) $(CFLAGS) ../../../../C/Lzma86Enc.c
  
  clean:
 -	-$(RM) $(PROG) $(OBJS)
 +	-$(RM) $(PROG) $(OBJS) $(PROG2) $(OBJS2)
  
-Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzma_version.h
+Index: lzma-9.22/CPP/7zip/Bundles/LzmaCon/lzma_version.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ lzma-4.43/C/7zip/Compress/LZMA_Alone/lzma_version.h	2007-07-24 00:31:50.000000000 +0200
++++ lzma-9.22/CPP/7zip/Bundles/LzmaCon/lzma_version.h	2012-01-08 16:23:18.000000000 +0100
 @@ -0,0 +1,31 @@
 +#ifndef LZMA_VERSION_H
 +#define LZMA_VERSION_H
@@ -1024,15 +1026,15 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzma_version.h
 +    Version and copyright information used by LZMA utils.
 +*/
 +
-+static const char *LZMA_SDK_VERSION_STRING = "4.43";
++static const char *LZMA_SDK_VERSION_STRING = "9.22";
 +
 +static const char *LZMA_SDK_COPYRIGHT_STRING =
-+		"Copyright (C) 1999-2006 Igor Pavlov";
++		"Copyright (C) 1999-2011 Igor Pavlov";
 +
 +static const char *LZMA_SDK_COPYRIGHT_INFO =
 +		"  See http://7-zip.org/sdk.html or the documentation of LZMA SDK for\n"
-+		"  the license. For reference, the version 4.43 is free software\n"
-+		"  licensed under the GNU LGPL.";
++		"  the license. For reference, the version 9.22 is free software\n"
++		"  licensed placed under the public domain.";
 +
 +
 +static const char *LZMA_UTILS_VERSION_STRING = PACKAGE_VERSION;
@@ -1048,11 +1050,11 @@ Index: lzma-4.43/C/7zip/Compress/LZMA_Alone/lzma_version.h
 +		"named COPYING.\n";
 +
 +#endif /* ifndef LZMA_VERSION_H */
-Index: lzma-4.43/C/Common/C_FileIO.h
+Index: lzma-9.22/CPP/Common/C_FileIO.h
 ===================================================================
---- lzma-4.43.orig/C/Common/C_FileIO.h	2004-07-24 13:35:06.000000000 +0200
-+++ lzma-4.43/C/Common/C_FileIO.h	2007-07-24 00:31:50.000000000 +0200
-@@ -24,6 +24,7 @@
+--- lzma-9.22.orig/CPP/Common/C_FileIO.h	2012-01-08 16:23:14.000000000 +0100
++++ lzma-9.22/CPP/Common/C_FileIO.h	2012-01-08 16:23:18.000000000 +0100
+@@ -28,6 +28,7 @@
    bool Close();
    bool GetLength(UInt64 &length) const;
    off_t Seek(off_t distanceToMove, int moveMethod) const;
